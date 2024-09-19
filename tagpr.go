@@ -219,11 +219,13 @@ func (tp *tagpr) Run(ctx context.Context) error {
 				if err != nil {
 					continue
 				}
+				fmt.Println("[Issues.Get]")
 				issue, resp, err := tp.gh.Issues.Get(ctx, tp.owner, tp.repo, prNum)
 				if err != nil {
 					showGHError(err, resp)
 					return err
 				}
+				debugGHResponse("Issues.Get", resp)
 				prIssues = append(prIssues, issue)
 			}
 		}
@@ -259,6 +261,7 @@ func (tp *tagpr) Run(ctx context.Context) error {
 		return err
 	}
 
+	fmt.Println("[PullRequests.List]")
 	head := fmt.Sprintf("%s:%s", tp.owner, rcBranch)
 	pulls, resp, err := tp.gh.PullRequests.List(ctx, tp.owner, tp.repo,
 		&github.PullRequestListOptions{
@@ -269,6 +272,7 @@ func (tp *tagpr) Run(ctx context.Context) error {
 		showGHError(err, resp)
 		return err
 	}
+	debugGHResponse("PullRequests.List", resp)
 
 	var (
 		labels    []string
@@ -463,6 +467,7 @@ OUT:
 		body = strings.TrimSpace(stuffs[1])
 	}
 	if currTagPR == nil {
+		fmt.Println("[PullRequests.Create]")
 		pr, resp, err := tp.gh.PullRequests.Create(ctx, tp.owner, tp.repo, &github.NewPullRequest{
 			Title: github.String(title),
 			Body:  github.String(body),
@@ -474,6 +479,7 @@ OUT:
 			return err
 		}
 		debugGHResponse("PullRequests.Create", resp)
+		fmt.Println("[Issues.AddLabelsToIssue]")
 		addingLabels = append(addingLabels, autoLabelName)
 		_, resp, err = tp.gh.Issues.AddLabelsToIssue(
 			ctx, tp.owner, tp.repo, *pr.Number, addingLabels)
@@ -482,6 +488,7 @@ OUT:
 			return err
 		}
 		debugGHResponse("Issues.AddLabelsToIssue", resp)
+		fmt.Println("[PullRequests.Get]")
 		tmpPr, resp, err := tp.gh.PullRequests.Get(ctx, tp.owner, tp.repo, *pr.Number)
 		if err == nil {
 			pr = tmpPr
@@ -492,6 +499,7 @@ OUT:
 		tp.setOutput("pull_request", string(b))
 		return nil
 	}
+	fmt.Println("[PullRequests.Edit]")
 	currTagPR.Title = github.String(title)
 	currTagPR.Body = github.String(mergeBody(*currTagPR.Body, body))
 	pr, resp, err := tp.gh.PullRequests.Edit(ctx, tp.owner, tp.repo, *currTagPR.Number, currTagPR)
@@ -501,6 +509,7 @@ OUT:
 	}
 	debugGHResponse("PullRequests.Edit", resp)
 	if len(addingLabels) > 0 {
+		fmt.Println("[Issues.AddLabelsToIssue]")
 		_, resp, err := tp.gh.Issues.AddLabelsToIssue(
 			ctx, tp.owner, tp.repo, *currTagPR.Number, addingLabels)
 		if err != nil {
@@ -508,6 +517,7 @@ OUT:
 			return err
 		}
 		debugGHResponse("Issues.AddLabelsToIssue", resp)
+		fmt.Println("[PullRequests.Get]")
 		tmpPr, resp, err := tp.gh.PullRequests.Get(ctx, tp.owner, tp.repo, *pr.Number)
 		if err == nil {
 			pr = tmpPr
@@ -575,6 +585,7 @@ func (tp *tagpr) detectRemote() (string, error) {
 }
 
 func (tp *tagpr) searchIssues(ctx context.Context, query string) ([]*github.Issue, error) {
+	fmt.Println("[Search.Issues]")
 	// Fortunately, we don't need to take care of the page count in response, because
 	// the default value of per_page is 30 and we can't specify more than 30 commits due to
 	// the length limit specification of the query string.

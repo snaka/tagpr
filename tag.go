@@ -2,6 +2,7 @@ package tagpr
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/google/go-github/v57/github"
@@ -13,6 +14,7 @@ func (tp *tagpr) latestPullRequest(ctx context.Context) (*github.PullRequest, er
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("[PullRequests.ListPullRequestsWithCommit]")
 	pulls, resp, err := tp.gh.PullRequests.ListPullRequestsWithCommit(
 		ctx, tp.owner, tp.repo, commitish, nil)
 	if err != nil {
@@ -79,6 +81,7 @@ func (tp *tagpr) tagRelease(ctx context.Context, pr *github.PullRequest, currVer
 	if err != nil {
 		return nil
 	}
+	fmt.Println("[Repositories.GenerateReleaseNotes]")
 	releases, resp, err := tp.gh.Repositories.GenerateReleaseNotes(
 		ctx, tp.owner, tp.repo, &github.GenerateNotesOptions{
 			TagName:         nextTag,
@@ -103,6 +106,7 @@ func (tp *tagpr) tagRelease(ctx context.Context, pr *github.PullRequest, currVer
 	if !tp.cfg.Release() {
 		return nil
 	}
+	fmt.Println("[Repositories.CreateRelease]")
 	// Don't use GenerateReleaseNote flag and use pre generated one
 	_, resp, err = tp.gh.Repositories.CreateRelease(
 		ctx, tp.owner, tp.repo, &github.RepositoryRelease{
