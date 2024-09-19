@@ -473,6 +473,7 @@ OUT:
 			showGHError(err, resp)
 			return err
 		}
+		debugGHResponse("PullRequests.Create", resp)
 		addingLabels = append(addingLabels, autoLabelName)
 		_, resp, err = tp.gh.Issues.AddLabelsToIssue(
 			ctx, tp.owner, tp.repo, *pr.Number, addingLabels)
@@ -480,6 +481,7 @@ OUT:
 			showGHError(err, resp)
 			return err
 		}
+		debugGHResponse("Issues.AddLabelsToIssue", resp)
 		tmpPr, resp, err := tp.gh.PullRequests.Get(ctx, tp.owner, tp.repo, *pr.Number)
 		if err == nil {
 			pr = tmpPr
@@ -497,6 +499,7 @@ OUT:
 		showGHError(err, resp)
 		return err
 	}
+	debugGHResponse("PullRequests.Edit", resp)
 	if len(addingLabels) > 0 {
 		_, resp, err := tp.gh.Issues.AddLabelsToIssue(
 			ctx, tp.owner, tp.repo, *currTagPR.Number, addingLabels)
@@ -504,9 +507,11 @@ OUT:
 			showGHError(err, resp)
 			return err
 		}
+		debugGHResponse("Issues.AddLabelsToIssue", resp)
 		tmpPr, resp, err := tp.gh.PullRequests.Get(ctx, tp.owner, tp.repo, *pr.Number)
 		if err == nil {
 			pr = tmpPr
+			debugGHResponse("PullRequests.Get", resp)
 		} else {
 			showGHError(err, resp)
 		}
@@ -578,6 +583,7 @@ func (tp *tagpr) searchIssues(ctx context.Context, query string) ([]*github.Issu
 		showGHError(err, resp)
 		return nil, err
 	}
+	debugGHResponse("Search.Issues", resp)
 	return issues.Issues, nil
 }
 

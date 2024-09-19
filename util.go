@@ -50,3 +50,15 @@ func showGHError(err error, resp *github.Response) {
 	// https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
 	fmt.Printf("::error title=%s::%s\n", title, message)
 }
+
+func debugGHResponse(desc string, resp *github.Response) {
+	if resp == nil {
+		return
+	}
+	for name := range resp.Header {
+		n := strings.ToLower(name)
+		if strings.HasPrefix(n, "x-ratelimit") || n == "x-github-request-id" || n == "retry-after" {
+			fmt.Printf("::debug [%s] %s=%s\n", desc, n, resp.Header.Get(name))
+		}
+	}
+}

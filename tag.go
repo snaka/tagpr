@@ -19,6 +19,7 @@ func (tp *tagpr) latestPullRequest(ctx context.Context) (*github.PullRequest, er
 		showGHError(err, resp)
 		return nil, err
 	}
+	debugGHResponse("PullRequests.ListPullRequestsWithCommit", resp)
 	if len(pulls) == 0 {
 		return nil, nil
 	}
@@ -88,6 +89,7 @@ func (tp *tagpr) tagRelease(ctx context.Context, pr *github.PullRequest, currVer
 		showGHError(err, resp)
 		return err
 	}
+	debugGHResponse("Repositories.GenerateReleaseNotes", resp)
 
 	if _, _, err := tp.c.Git("tag", nextTag); err != nil {
 		return err
@@ -114,5 +116,6 @@ func (tp *tagpr) tagRelease(ctx context.Context, pr *github.PullRequest, currVer
 		showGHError(err, resp)
 		return err
 	}
+	debugGHResponse("Repositories.CreateRelease", resp)
 	return nil
 }
