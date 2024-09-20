@@ -1,4 +1,4 @@
-module github.com/Songmu/tagpr
+module github.com/snaka/tagpr
 
 go 1.21.5
 
